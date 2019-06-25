@@ -1,12 +1,11 @@
 import express from 'express';
 
-export const isAuthenticated = (req: express.Request, _res: express.Response, next: express.NextFunction) => {
-    if (req.body.Authorization) {
+export const isAuthenticated = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (req.headers.Authorization || req.headers['authorization']) {
         const user = req.body.user;
-        const password = req.body.password;
-        console.log(user, password);
+        console.log(user, req.headers.Authorization, req.headers['authorization']);
         next();
     } else {
-        _res.status(400).send({ message: "User not valid" });
+        res.status(400).send({ message: "User not valid" });
     }
 }

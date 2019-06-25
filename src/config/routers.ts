@@ -1,10 +1,21 @@
 import express from 'express';
-import { isAuthenticated } from './auth';
 
-export const setApiController = (app: express.Express) => {
-    app.use('/api', isAuthenticated, (_req: express.Request, res: express.Response) => {
-        res.status(200).send({
-            message: "Hello from api"
-        });
-    })
+//import { isAuthenticated } from './auth';
+import EmployeeController from '../controllers/employeeController';
+
+const router = express.Router();
+/**
+ * set routers for the api
+ */
+export const apiRouters = (app: express.Express) => {
+    console.log("router registration");
+
+    /** employee controller */
+    const employeeController = new EmployeeController();
+    employeeController.setRouter(router);
+
+    //app.use('/api', isAuthenticated, router);
+    app.use('/api', router);
+
 }
+
