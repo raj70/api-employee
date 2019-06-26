@@ -3,7 +3,7 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
-    entry: './src/server.ts',
+    entry: ['@babel/polyfill', './src/server.ts'],
     devtool: 'inline-source-map',
     module: {
         rules: [{
