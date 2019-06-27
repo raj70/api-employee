@@ -1,12 +1,11 @@
 import express from 'express';
 
-import { isAuthenticated } from '../config/auth';
+import { isAuthenticated } from '../auth/authMiddleware';
 import { Employee } from '../models/Employee';
 import { EmployeeController } from './employeeController';
 import { Message } from '../models/Message';
 
 export function setRouter(router: express.Router): void {
-    console.log("registration of employee router");
     router.get('/Employees', getEmployees);
     router.get('/Employee/:id(\\d+)/', getEmployeeById);
     router.post('/Employee', addEmployee); //create
