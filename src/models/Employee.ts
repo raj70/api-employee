@@ -2,8 +2,9 @@
 //https://www.c-sharpcorner.com/article/ts-validator-typescript-based-generic-validation-framework/
 
 import { IValidator, ValidationResult, Validator } from 'ts.validator.fluent/dist';
+import IEmployee from '../models/IEmployee'
 
-export class Employee {
+export class Employee implements IEmployee {
     title: string;
     name: string;
     lastName: string;
@@ -15,7 +16,7 @@ export class Employee {
     Dob!: Date;
 
     constructor() {
-        this.title = "Mr.";
+        this.title = "Mr";
         this.name = "";
         this.middleName = "";
         this.lastName = "";
@@ -87,7 +88,8 @@ export class Employee {
         if (!resultNullValue.IsValid
             || !resultEmptyValue.IsValid
             || !resultEmailValue.IsValid
-            || !resultPhoneValue.IsValid) {
+            || !resultPhoneValue.IsValid
+            || !resultDobValue.IsValid) {
 
             resultNullValue.Errors.forEach(x =>
                 error += `Error: ${x.Identifier}-${x.Value}: ${x.Message} \n`

@@ -2,18 +2,9 @@
 //https://mongoosejs.com/docs/schematypes.html
 
 import { Schema, Document, Model, model } from "mongoose";
+import IEmployee from "../models/IEmployee";
 
-export interface IEmployee extends Document {
-    title: string;
-    name: string;
-    lastName: string;
-    middleName: string;
-    email: string;
-    joinDate: Date;
-    phone: Number;
-    mobile_phone: Number;
-    Dob: Date;
-
+export interface IDbEmployee extends IEmployee, Document {
     fullName(): string
 }
 
@@ -57,4 +48,4 @@ employeeSchema.pre("save", next => {
 });
 //employeeSchema.virtual("fullName").get(() => `${this.name} ${this.lastname}`);
 
-export const DbEmployee: Model<IEmployee> = model<IEmployee>("DbEmployee", employeeSchema);
+export const DbEmployee: Model<IDbEmployee> = model<IDbEmployee>("DbEmployee", employeeSchema);
