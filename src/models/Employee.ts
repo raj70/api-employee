@@ -1,3 +1,6 @@
+//https://www.npmjs.com/package/ts.validator.fluent
+//https://www.c-sharpcorner.com/article/ts-validator-typescript-based-generic-validation-framework/
+
 import { IValidator, ValidationResult, Validator } from 'ts.validator.fluent/dist';
 
 export class Employee {
@@ -9,6 +12,7 @@ export class Employee {
     joinDate: Date = new Date();
     phone!: number;
     mobile_phone!: number;
+    Dob!: Date;
 
     constructor() {
         this.title = "Mr.";
@@ -47,6 +51,13 @@ export class Employee {
         return validator.Email(x => x.email, "Not a valid email", "Employee.email.Not_Valid").ToResult();
     }
 
+    private validateDob(validator: IValidator<Employee>): ValidationResult {
+
+        return validator
+            .NotNull(x => x.Dob, "Not a valid Dob", "Employee.Dob.NotValid")
+            .ToResult();
+    }
+
     private validatePhone(validator: IValidator<Employee>): ValidationResult {
 
         return validator
@@ -71,6 +82,7 @@ export class Employee {
         let resultEmptyValue = new Validator(this).Validate(this.validateEmptyValue);
         let resultEmailValue = new Validator(this).Validate(this.validateIsEmail);
         let resultPhoneValue = new Validator(this).Validate(this.validatePhone);
+        let resultDobValue = new Validator(this).Validate(this.validateDob);
 
         if (!resultNullValue.IsValid
             || !resultEmptyValue.IsValid
@@ -92,9 +104,11 @@ export class Employee {
             resultPhoneValue.Errors.forEach(x =>
                 error += `Error: ${x.Identifier}-${x.Value}: ${x.Message} \n`
             );
+
+            resultDobValue.Errors.forEach(x =>
+                error += `Error: ${x.Identifier}-${x.Value}: ${x.Message} \n`
+            );
         }
         return error;
     }
 }
-//https://www.npmjs.com/package/ts.validator.fluent
-//https://www.c-sharpcorner.com/article/ts-validator-typescript-based-generic-validation-framework/

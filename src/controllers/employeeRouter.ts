@@ -60,7 +60,7 @@ function updateEmployee(_req: express.Request, _res: express.Response): void {
     createResponse("Updated Successful: " + employeeId, message, _res);
 }
 
-function addEmployee(_req: express.Request, _res: express.Response): void {
+async function addEmployee(_req: express.Request, _res: express.Response): Promise<void> {
     const controller = new EmployeeController();
     let message = new Message();
 
@@ -74,8 +74,23 @@ function addEmployee(_req: express.Request, _res: express.Response): void {
         return;
     }
 
-    message = controller.add(createEmployee(_req));
-    createResponse("Added Successful", message, _res);
+    message = await controller.add(createEmployee(_req));
+    // const result = controller.add(createEmployee(_req));
+    // result.then(message => {
+    //     createResponse("Added Successful", message, _res);
+    // });
+
+    // result.catch(reason => {
+    //     message = reason;
+    //     //console.log("Fail: Add ", reason);
+    //     createResponse("Fail", message, _res);
+    // });
+
+    if (message.isError) {
+        createResponse("Failed", message, _res);
+    } else {
+        createResponse("Added Successful", message, _res);
+    }
 }
 
 function getEmployeeById(_req: express.Request, _res: express.Response): void {
@@ -112,13 +127,13 @@ function createEmployee(_req: express.Request): Employee {
     employee.email = _req.body.email;
     employee.phone = _req.body.phone;
     employee.mobile_phone = _req.body.mobile_phone;
+    employee.Dob = _req.body.dob;
     return employee;
 }
 
 function createResponse(successMessage: string, message: Message, _res: express.Response) {
     if (message.isError) {
-
-        _res.status(message.statusCode).send(message.stringfy());
+        _res.status(message.statusCode).send(message);
     }
     else {
         message.message = successMessage;
