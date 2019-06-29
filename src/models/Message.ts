@@ -2,7 +2,7 @@ export class Message {
 
     message: string = '';
     isError: boolean = false;
-    data = [];
+    data = [] as object[];
     statusCode: number = 200;
 
     /**

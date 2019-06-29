@@ -5,7 +5,7 @@ import { Schema, Document, Model, model } from "mongoose";
 import IEmployee from "../models/IEmployee";
 
 export interface IDbEmployee extends IEmployee, Document {
-    fullName(): string
+    fullName(): string;
 }
 
 const employeeSchema: Schema = new Schema({
@@ -46,6 +46,5 @@ employeeSchema.methods.fullName = function (): string {
 employeeSchema.pre("save", next => {
     next();
 });
-//employeeSchema.virtual("fullName").get(() => `${this.name} ${this.lastname}`);
-
-export const DbEmployee: Model<IDbEmployee> = model<IDbEmployee>("DbEmployee", employeeSchema);
+const DbEmployee: Model<IDbEmployee> = model<IDbEmployee>("DbEmployee", employeeSchema);
+export default DbEmployee;

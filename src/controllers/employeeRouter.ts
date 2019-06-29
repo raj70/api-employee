@@ -6,19 +6,19 @@ import { EmployeeController } from './employeeController';
 import { Message } from '../models/Message';
 
 export function setRouter(router: express.Router): void {
-    router.get('/Employees', getEmployees);
-    router.get('/Employee/:id(\\d+)/', getEmployeeById);
-    router.post('/Employee', addEmployee); //create
-    router.put('/Employee/:id(\\d+)/', updateEmployee); //update
+    router.get('/Employees', isAuthenticated, getEmployees);
+    router.get('/Employee/:id(\\d+)/', isAuthenticated, getEmployeeById);
+    router.post('/Employee', isAuthenticated, addEmployee); //create
+    router.put('/Employee/:id(\\d+)/', isAuthenticated, updateEmployee); //update
     router.delete('/Employee/:id(\\d+)/', isAuthenticated, deleteEmployee);
 }
 
-function deleteEmployee(_req: express.Request, _res: express.Response): void {
+async function deleteEmployee(_req: express.Request, _res: express.Response): Promise<void> {
     const controller = new EmployeeController();
     let message = new Message();
 
     const employeeId = _req.params.id;
-    if (!employeeId) {
+    if (!employeeId) {/* probable this will never happen */
         message.statusCode = 400;
         message.message = "not valid employee id";
         _res.status(400).send({
@@ -27,11 +27,16 @@ function deleteEmployee(_req: express.Request, _res: express.Response): void {
         return;
     }
 
-    message = controller.delete(employeeId);
-    createResponse("Deleted Successful: " + employeeId, message, _res);
+    message = await controller.delete(employeeId);
+
+    if (!message.isError) {
+        createResponse("Failed", message, _res);
+    } else {
+        createResponse("Deleted Successful", message, _res);
+    }
 }
 
-function updateEmployee(_req: express.Request, _res: express.Response): void {
+async function updateEmployee(_req: express.Request, _res: express.Response): Promise<void> {
     const controller = new EmployeeController();
     let message = new Message();
 
@@ -55,9 +60,13 @@ function updateEmployee(_req: express.Request, _res: express.Response): void {
         return;
     }
 
-    message = controller.update(employeeId, createEmployee(_req));
+    message = await controller.update(employeeId, createEmployee(_req));
 
-    createResponse("Updated Successful: " + employeeId, message, _res);
+    if (message.isError) {
+        createResponse("Failed", message, _res);
+    } else {
+        createResponse("Updated Successful", message, _res);
+    }
 }
 
 async function addEmployee(_req: express.Request, _res: express.Response): Promise<void> {
@@ -75,16 +84,6 @@ async function addEmployee(_req: express.Request, _res: express.Response): Promi
     }
 
     message = await controller.add(createEmployee(_req));
-    // const result = controller.add(createEmployee(_req));
-    // result.then(message => {
-    //     createResponse("Added Successful", message, _res);
-    // });
-
-    // result.catch(reason => {
-    //     message = reason;
-    //     //console.log("Fail: Add ", reason);
-    //     createResponse("Fail", message, _res);
-    // });
 
     if (message.isError) {
         createResponse("Failed", message, _res);
@@ -93,7 +92,12 @@ async function addEmployee(_req: express.Request, _res: express.Response): Promi
     }
 }
 
-function getEmployeeById(_req: express.Request, _res: express.Response): void {
+/**
+ * Get Employee by Id
+ * @param _req 
+ * @param _res 
+ */
+async function getEmployeeById(_req: express.Request, _res: express.Response): Promise<void> {
     const controller = new EmployeeController();
     let message = new Message();
 
@@ -108,14 +112,29 @@ function getEmployeeById(_req: express.Request, _res: express.Response): void {
         return;
     }
 
-    message = controller.get(employeeId);
-    createResponse("Retrieve Successful", message, _res);
+    message = await controller.get(employeeId);
+
+    if (message.isError) {
+        createResponse("Failed", message, _res);
+    } else {
+        createResponse("Retrieved Successful", message, _res);
+    }
 }
 
-function getEmployees(_req: express.Request, _res: express.Response): void {
+/**
+ * Get All Employes
+ * @param _req 
+ * @param _res 
+ */
+async function getEmployees(_req: express.Request, _res: express.Response): Promise<void> {
     const controller = new EmployeeController();
-    let message = controller.getAll();
-    createResponse("Retrieve Successful", message, _res);
+    let message = await controller.getAll();
+
+    if (message.isError) {
+        createResponse("Failed", message, _res);
+    } else {
+        createResponse("Retrieved Successful", message, _res);
+    }
 }
 
 function createEmployee(_req: express.Request): Employee {
