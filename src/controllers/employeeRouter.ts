@@ -7,10 +7,10 @@ import { Message } from '../models/Message';
 
 export function setRouter(router: express.Router): void {
     router.get('/Employees', isAuthenticated, getEmployees);
-    router.get('/Employee/:id(\\d+)/', isAuthenticated, getEmployeeById);
+    router.get('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, getEmployeeById);
     router.post('/Employee', isAuthenticated, addEmployee); //create
-    router.put('/Employee/:id(\\d+)/', isAuthenticated, updateEmployee); //update
-    router.delete('/Employee/:id(\\d+)/', isAuthenticated, deleteEmployee);
+    router.put('/Employee/:id', isAuthenticated, updateEmployee); //update
+    router.delete('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, deleteEmployee);
 }
 
 async function deleteEmployee(_req: express.Request, _res: express.Response): Promise<void> {
@@ -29,7 +29,7 @@ async function deleteEmployee(_req: express.Request, _res: express.Response): Pr
 
     message = await controller.delete(employeeId);
 
-    if (!message.isError) {
+    if (message.isError) {
         createResponse("Failed", message, _res);
     } else {
         createResponse("Deleted Successful", message, _res);
@@ -37,6 +37,7 @@ async function deleteEmployee(_req: express.Request, _res: express.Response): Pr
 }
 
 async function updateEmployee(_req: express.Request, _res: express.Response): Promise<void> {
+    console.log("update employee");
     const controller = new EmployeeController();
     let message = new Message();
 
@@ -70,9 +71,11 @@ async function updateEmployee(_req: express.Request, _res: express.Response): Pr
 }
 
 async function addEmployee(_req: express.Request, _res: express.Response): Promise<void> {
+
     const controller = new EmployeeController();
     let message = new Message();
 
+    console.log(_req.body);
     if (!_req.body) {
         message.statusCode = 400;
         message.message = "Please provide data";
@@ -85,6 +88,7 @@ async function addEmployee(_req: express.Request, _res: express.Response): Promi
 
     message = await controller.add(createEmployee(_req));
 
+    console.log(message);
     if (message.isError) {
         createResponse("Failed", message, _res);
     } else {

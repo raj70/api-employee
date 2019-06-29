@@ -6,6 +6,7 @@ import express from 'express';
 import { setEnv } from './config/env';
 import { apiRouters } from './config/routers';
 import bodyParser from 'body-parser';
+import { connectdb } from './config/db';
 
 const app = express();
 
@@ -13,6 +14,7 @@ const app = express();
 app.use(bodyParser.json());
 setEnv();
 apiRouters(app);
+connectdb();
 
 
 app.get('/', (_req, res, _next) => {

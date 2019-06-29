@@ -13,6 +13,7 @@ export const setEnv = () => {
         if (process.env.NODE_ENV === 'development') {
             process.env.PORT = '4300';
             process.env.HOST = 'localhost';
+            process.env.DB_URL = 'mongodb://localhost:27017/employee-management';
         }
 
     }

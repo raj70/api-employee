@@ -3,7 +3,6 @@ import { IController } from './iController';
 import { Message } from '../models/Message';
 import DbEmployee, { IDbEmployee } from '../dbModels/DbEmployee';
 import IEmployee from "../models/IEmployee";
-
 export class EmployeeController implements IController<Employee>{
 
     constructor() {
@@ -19,7 +18,6 @@ export class EmployeeController implements IController<Employee>{
                 message.isError = true;
                 message.statusCode = 400;
                 message.message = validMesssage;
-                console.log(employee, validMesssage);
                 reject(message);
             } else {
                 //add to Db
@@ -34,16 +32,25 @@ export class EmployeeController implements IController<Employee>{
                 dbEmployee.Dob = employee.Dob;
 
                 await dbEmployee.save(error => {
+
+                    console.log(error);
                     if (error) {
                         message.isError = true;
-                        message.statusCode = 500;
-                        message.message = error.message;
-                        //console.log("error encoutered while saving :", error.message);
+                        if (error.code === 11000) {
+                            message.statusCode = 400;
+                            message.message = "Duplicate Email Address";
+                        } else {
+                            message.statusCode = 500;
+                            message.message = error.message;
+                        }
                         reject(message);
                     }
+                    else {
+                        resolve(message);
+                    }
                 });
+
             }
-            resolve(message);
         }).catch((reason) => {
             return reason;
         });
@@ -143,7 +150,7 @@ export class EmployeeController implements IController<Employee>{
             let message = new Message();
             message.statusCode = 200;
             message.message = "Updated ";
-            DbEmployee.findByIdAndUpdate(id, model, { new: true }, (error, employee) => {
+            DbEmployee.findOneAndUpdate({ _id: id, email: model.email }, model, { new: true }, (error, employee) => {
                 if (error) {
                     message.isError = true;
                     message.statusCode = 400;
@@ -151,14 +158,14 @@ export class EmployeeController implements IController<Employee>{
                     reject(message);
                 }
                 else if (!employee) {
-                    if (error) {
-                        message.isError = true;
-                        message.statusCode = 400;
-                        message.message = "Not found Error: " + error.message;
-                        reject(message);
-                    }
+                    console.log(employee, error);
+                    message.isError = true;
+                    message.statusCode = 400;
+                    message.message = "Cannot edit email address";
+                    reject(message);
                 }
                 else {
+                    console.log(employee);
                     const emp = this.createEmployee(employee);
                     message.data = [emp];
                 }
