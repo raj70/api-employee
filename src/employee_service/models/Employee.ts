@@ -2,7 +2,7 @@
 //https://www.c-sharpcorner.com/article/ts-validator-typescript-based-generic-validation-framework/
 
 import { IValidator, ValidationResult, Validator } from 'ts.validator.fluent/dist';
-import IEmployee from '../models/IEmployee'
+import IEmployee from './IEmployee'
 
 export class Employee implements IEmployee {
     title: string;

@@ -2,7 +2,7 @@
 //https://mongoosejs.com/docs/schematypes.html
 
 import { Schema, Document, Model, model } from "mongoose";
-import IEmployee from "../models/IEmployee";
+import IEmployee from '../models/IEmployee';
 
 export interface IDbEmployee extends IEmployee, Document {
     fullName(): string;

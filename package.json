@@ -4,7 +4,9 @@
   "description": "REST API for employee management",
   "main": "index.js",
   "scripts": {
-    "buildDev": "rm -rf dist && webpack --mode development --config webpack.config.js && nodemon dist/bundle.js"
+    "test": "nodemon dist/auth_service.js",
+    "buildDev": "rm -rf dist && webpack --mode development --config webpack.config.js && nodemon dist/employee_service.js && nodemon dist/auth_service.js"
+
   },
   "repository": {
     "type": "git",

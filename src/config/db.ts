@@ -11,3 +11,15 @@ export const connectdb = () => {
         }
     });
 }
+
+export const connectdb_Auth = () => {
+    const url = process.env.DB_URL_AUTH;
+    mongoose.set('useFindAndModify', true);
+    mongoose.connect(<string>url, { useNewUrlParser: true }, (error: any) => {
+        if (error) {
+            console.log('unable to connect to auth db', url, error);
+        } else {
+            console.log('connected to Auth MongoDb');
+        }
+    });
+}

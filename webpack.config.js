@@ -2,8 +2,10 @@ const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
 
-module.exports = {
-    entry: ['@babel/polyfill', './src/server.ts'],
+const auth_Service = {
+    entry: {
+        auth_service: ['./src/authentication_service/server.ts']
+    },
     devtool: 'inline-source-map',
     module: {
         rules: [{
@@ -16,17 +18,13 @@ module.exports = {
             enforce: 'pre'
         }]
     },
-    devServer: {
-        contentBase: path.join(__dirname, 'dist'),
-        inline: true,
-        port: 4800
-    },
     resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
     externals: [nodeExternals()],
     output: {
-        filename: 'bundle.js',
+        /* this name is coming from entry, above (server). the file will be named auth_service.js*/
+        filename: '[name].js',
         path: path.join(__dirname, 'dist')
     },
     target: 'node',
@@ -34,3 +32,36 @@ module.exports = {
         new ForkTsCheckerWebpackPlugin(),
     ]
 };
+
+const emp_Service = {
+    entry: {
+        employee_service: ['@babel/polyfill', './src/employee_service/server.ts']
+    },
+    devtool: 'inline-source-map',
+    module: {
+        rules: [{
+            test: /\.tsx?$/,
+            use: 'babel-loader',
+            exclude: /node_modules/
+        }, {
+            test: /\.js$/,
+            use: ['source-map-loader'],
+            enforce: 'pre'
+        }]
+    },
+    resolve: {
+        extensions: ['.tsx', '.ts', '.js']
+    },
+    externals: [nodeExternals()],
+    output: {
+        /* this name is coming from entry, above (server) */
+        filename: '[name].js',
+        path: path.join(__dirname, 'dist')
+    },
+    target: 'node',
+    plugins: [
+        new ForkTsCheckerWebpackPlugin(),
+    ]
+};
+
+module.exports = [auth_Service, emp_Service];
