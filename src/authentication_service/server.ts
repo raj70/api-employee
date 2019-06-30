@@ -6,13 +6,19 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { setEnv } from '../config/env';
 import { connectdb_Auth } from '../config/db';
+import { setRouter } from './routers/authRouter';
 
 const app = express();
+const router = express.Router();
 
 //configure
 app.use(bodyParser.json());
 setEnv();
-//apiRouters(app);
+
+//set routes
+setRouter(router);
+app.use('/api', router);
+
 connectdb_Auth();
 
 

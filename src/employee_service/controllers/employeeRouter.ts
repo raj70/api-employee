@@ -9,7 +9,7 @@ export function setRouter(router: express.Router): void {
     router.get('/Employees', isAuthenticated, getEmployees);
     router.get('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, getEmployeeById);
     router.post('/Employee', isAuthenticated, addEmployee); //create
-    router.put('/Employee/:id', isAuthenticated, updateEmployee); //update
+    router.put('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, updateEmployee); //update
     router.delete('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, deleteEmployee);
 }
 
