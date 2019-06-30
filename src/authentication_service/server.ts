@@ -23,6 +23,6 @@ app.get('/', (_req, res, _next) => {
 const port: number = process.env.PORT_NUMBER_AUTH ? <number><unknown>process.env.PORT_NUMBER_AUTH : 4200;
 
 app.listen(port, 'localhost', () => {
-    console.log(`api server running on port ${process.env.PORT_NUMBER_AUTH}`);
-    console.log(`api server running: http://${process.env.HOST}:${process.env.PORT_NUMBER_AUTH}`);
+    console.log(`auth api server running on port ${process.env.PORT_NUMBER_AUTH}`);
+    console.log(`auth api server running: http://${process.env.HOST}:${process.env.PORT_NUMBER_AUTH}`);
 });
