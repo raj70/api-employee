@@ -4,7 +4,7 @@ const nodeExternals = require('webpack-node-externals');
 
 const auth_Service = {
     entry: {
-        auth_service: ['./src/authentication_service/server.ts']
+        auth_service: ['@babel/polyfill', './src/authentication_service/server.ts']
     },
     devtool: 'inline-source-map',
     module: {

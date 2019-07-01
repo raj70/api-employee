@@ -3,7 +3,7 @@ import express from 'express';
 import { isAuthenticated } from '../auth/authMiddleware';
 import { Employee } from '../models/Employee';
 import { EmployeeController } from './employeeController';
-import { Message } from '../models/Message';
+import { Message } from '../../models/Message';
 
 export function setRouter(router: express.Router): void {
     router.get('/Employees', isAuthenticated, getEmployees);

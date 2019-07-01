@@ -1,4 +1,4 @@
-import { Message } from "../models/Message";
+import { Message } from "../../models/Message";
 
 export interface IController<T> {
     add(model: T): Promise<Message>;

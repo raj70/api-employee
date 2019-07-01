@@ -1,6 +1,6 @@
 import { Employee } from "../models/Employee";
 import { IController } from './iController';
-import { Message } from '../models/Message';
+import { Message } from '../../models/Message';
 import DbEmployee, { IDbEmployee } from '../dbModels/DbEmployee';
 import IEmployee from "../models/IEmployee";
 export class EmployeeController implements IController<Employee>{

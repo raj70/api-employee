@@ -19,6 +19,7 @@ setEnv();
 setRouter(router);
 app.use('/api', router);
 
+//connect to db
 connectdb_Auth();
 
 
