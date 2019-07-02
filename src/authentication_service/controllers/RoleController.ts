@@ -1,29 +1,30 @@
 import { Message } from "../../models/Message";
 import { Role } from "../models/Role";
-import DbRole from "../dbModels/DbRole";
+import DbRole, { IDbRole } from "../dbModels/DbRole";
 
 export class RoleController {
     constructor() {
     }
 
-    getRole(_id: string): Promise<Message> {
+    getRole(_userId: string): Promise<Message> {
         return new Promise<Message>((resolve, reject) => {
             const message = new Message();
             message.message = "Successful";
             message.statusCode = 200;
 
-            DbRole.findById(_id, (error, role) => {
+            DbRole.findOne({ userId: _userId }, (error, role) => {
                 if (error) {
+                    message.isError = true;
                     message.statusCode = 500;
                     message.message = "Role not found";
                     reject(message);
                 } else if (!role) {
+                    message.isError = true;
                     message.statusCode = 500;
                     message.message = "Role not found";
                     reject(message);
-                }
-                else {
-                    message.data = [role];
+                } else {
+                    message.data = [<IDbRole>role];
                     resolve(message);
                 }
             });

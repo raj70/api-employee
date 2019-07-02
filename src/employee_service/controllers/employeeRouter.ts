@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { isAuthenticated } from '../auth/authMiddleware';
+import { isAuthenticated } from '../../Utils/authMiddleware';
 import { Employee } from '../models/Employee';
 import { EmployeeController } from './employeeController';
 import { Message } from '../../models/Message';

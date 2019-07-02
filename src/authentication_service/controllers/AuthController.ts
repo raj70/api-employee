@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt-nodejs';
 import { User } from "../models/User";
 import { Message } from "../../models/Message";
 import DbUser from "../dbModels/DbUser";
+import { JwtUtil } from '../../Utils/TokenUtil';
 
 export class AuthController {
     constructor() {
@@ -35,14 +36,14 @@ export class AuthController {
         });
     }
 
-    validate(_id: string, _user: User): Promise<Message> {
+    validate(_user: User): Promise<Message> {
         return new Promise<Message>((resolve, reject) => {
             const message = new Message();
             message.message = "Successful";
             message.statusCode = 200;
 
             const errorMessage = "User or Password not valid";
-            DbUser.findOne({ _id }, (error, user) => {
+            DbUser.findOne({ email: _user.email }, (error, user) => {
                 if (error) {
                     message.isError = true;
                     message.statusCode = 500;
@@ -55,7 +56,14 @@ export class AuthController {
                     reject(message);
                 } else {
                     if (_user.email === user.email && bcrypt.compareSync(_user.password, user.password)) {
-                        message.data = [{ _id: user._id, email: user.email }];
+
+                        const jwtUtil = new JwtUtil();
+                        const token = jwtUtil.generate(user._id, user.email);
+
+                        message.data = [{
+                            token: token
+                        }];
+
                         resolve(message);
                     } else {
                         message.isError = true;

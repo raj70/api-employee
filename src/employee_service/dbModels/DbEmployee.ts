@@ -43,8 +43,9 @@ employeeSchema.methods.fullName = function (): string {
     return `${this.name} ${this.lastname}`;
 }
 
-employeeSchema.pre("save", next => {
+employeeSchema.pre<IDbEmployee>("save", next => {
     next();
 });
+
 const DbEmployee: Model<IDbEmployee> = model<IDbEmployee>("DbEmployee", employeeSchema);
 export default DbEmployee;
