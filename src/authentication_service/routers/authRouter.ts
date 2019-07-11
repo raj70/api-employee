@@ -131,6 +131,6 @@ async function checkIfAdmin(_req: express.Request, _res: express.Response, _next
     }
 
     if (!isError) {
-        _next();
+        _next('router');
     }
 }
