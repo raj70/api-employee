@@ -18,20 +18,25 @@ export class JwtUtil {
         return token;
     }
 
-    validate(token: string, errorFunction: Function): boolean {
-        let valid = false;
-        jwt.verify(token, this.key, (error, decoded) => {
-            if (error) {
-                errorFunction(error);
-                console.log("validate", error.message);
-                valid = false;
-            }
-            else if (decoded) {
-                valid = true;
-                //console.log(decoded);
-            }
-        });
-        return valid;
+    validate(token: string, errorFunction: Function): Promise<boolean> {
+
+        return new Promise<boolean>(async (resolve, reject) => {
+            let valid = false;
+            await jwt.verify(token, this.key, (error, decoded) => {
+                if (error) {
+                    errorFunction(error);
+                    console.log("validate", error.message);
+                    valid = false;
+                    reject(valid);
+                }
+                else if (decoded) {
+                    valid = true;
+                    //console.log(decoded);
+                    resolve(valid);
+                }
+            });
+            return valid;
+        }).catch(reason => reason);
     }
 
     getUser(token: string): Promise<Data> {
@@ -48,9 +53,6 @@ export class JwtUtil {
                     else if (decoded) {
                         value.data._id = (decoded as unknown as Data).data._id;
                         value.data._email = (decoded as unknown as Data).data._email;
-                        // const o = <Data>JSON.parse(decoded)
-                        // value.data._id = o.data._id;
-                        // value.data._email = o.data._email;
                         resolve(value);
                     }
                 });

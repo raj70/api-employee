@@ -9,7 +9,7 @@ import { VerifyErrors } from 'jsonwebtoken';
  * @param res 
  * @param next 
  */
-export const isAuthenticated = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const isAuthenticated = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (req.headers.Authorization || req.headers['authorization']) {
         let errorMessage = '';
 
@@ -19,15 +19,17 @@ export const isAuthenticated = (req: express.Request, res: express.Response, nex
         let isValid = false;
         if (authValue !== '') {
             const token = new JwtUtil();
-            isValid = token.validate(authValue, error);
+            isValid = await token.validate(authValue, error);
         }
+
 
         if (authValue === '' || !isValid) {
-            res.status(400).send({ message: "User not valid. Please login " + errorMessage });
+            res.status(400).send({ message: "User not valid. Please login again " + errorMessage });
         }
-
-        next();
-
+        if (!isValid) {
+            next('router'); /* this stops other router to execute */
+        }
+        // internal function
         function error(error: VerifyErrors) {
             if (error) {
                 errorMessage = error.message;
