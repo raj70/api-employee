@@ -28,6 +28,8 @@ export const isAuthenticated = async (req: express.Request, res: express.Respons
         }
         if (!isValid) {
             next('router'); /* this stops other router to execute */
+        } else {
+            next();
         }
         // internal function
         function error(error: VerifyErrors) {
