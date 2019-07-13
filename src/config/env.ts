@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 export const setEnv = () => {
 
     const result = dotenv.config({
-        path: `.env.development`
+        path: `envs/.env.development`
     });
 
     if (result.error) {
