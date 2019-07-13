@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt-nodejs';
 import { User } from "../models/User";
 import { Message } from "../../models/Message";
-import DbUser from "../dbModels/DbUser";
+import DbUser, { IDbUser } from "../dbModels/DbUser";
 import { JwtUtil } from '../../Utils/TokenUtil';
 
 export class AuthController {
@@ -9,25 +9,28 @@ export class AuthController {
     }
 
     getUser(_id: string): Promise<Message> {
-        return new Promise<Message>((resolve, reject) => {
+        return new Promise<Message>(async (resolve, reject) => {
             const message = new Message();
             message.message = "Successful";
             message.statusCode = 200;
 
-            DbUser.findOne({ _id: _id }, (error, user) => {
+            await DbUser.findById(_id, (error, user) => {
                 if (error) {
+                    console.log('error', error);
                     message.isError = true;
                     message.statusCode = 500;
                     message.message = "User not found";
                     reject(message);
                 } else if (!user) {
+                    console.log('user', user);
                     message.isError = true;
                     message.statusCode = 500;
                     message.message = "User not found";
                     reject(message);
                 }
                 else {
-                    message.data = [{ _id: user._id, email: user.email }];
+                    console.log(user);
+                    message.data = [<IDbUser>user];
                     resolve(message);
                 }
             });
@@ -36,14 +39,14 @@ export class AuthController {
         });
     }
 
-    validate(_user: User): Promise<Message> {
-        return new Promise<Message>((resolve, reject) => {
+    login(_user: User): Promise<Message> {
+        return new Promise<Message>(async (resolve, reject) => {
             const message = new Message();
             message.message = "Successful";
             message.statusCode = 200;
 
             const errorMessage = "User or Password not valid";
-            DbUser.findOne({ email: _user.email }, (error, user) => {
+            await DbUser.findOne({ email: _user.email }, (error, user) => {
                 if (error) {
                     message.isError = true;
                     message.statusCode = 500;

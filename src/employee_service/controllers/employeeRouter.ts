@@ -1,16 +1,18 @@
 import express from 'express';
+import axios from 'axios';
 
-import { isAuthenticated } from '../../Utils/authMiddleware';
+import { isAuthenticated, getAuthToken } from '../../Utils/authMiddleware';
 import { Employee } from '../models/Employee';
 import { EmployeeController } from './employeeController';
 import { Message } from '../../models/Message';
+import { JwtUtil, Data } from '../../Utils/TokenUtil';
 
 export function setRouter(router: express.Router): void {
-    router.get('/Employees', isAuthenticated, getEmployees);
+    router.get('/Employees', isAuthenticated, checkIfAdmin, getEmployees);
     router.get('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, getEmployeeById);
-    router.post('/Employee', isAuthenticated, addEmployee); //create
-    router.put('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, updateEmployee); //update
-    router.delete('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, deleteEmployee);
+    router.post('/Employee', isAuthenticated, checkIfAdmin, addEmployee); //create
+    router.put('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, checkIfAdmin, updateEmployee); //update
+    router.delete('/Employee/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, checkIfAdmin, deleteEmployee);
 }
 
 async function deleteEmployee(_req: express.Request, _res: express.Response): Promise<void> {
@@ -37,7 +39,6 @@ async function deleteEmployee(_req: express.Request, _res: express.Response): Pr
 }
 
 async function updateEmployee(_req: express.Request, _res: express.Response): Promise<void> {
-    console.log("update employee");
     const controller = new EmployeeController();
     let message = new Message();
 
@@ -75,7 +76,6 @@ async function addEmployee(_req: express.Request, _res: express.Response): Promi
     const controller = new EmployeeController();
     let message = new Message();
 
-    console.log(_req.body);
     if (!_req.body) {
         message.statusCode = 400;
         message.message = "Please provide data";
@@ -88,7 +88,6 @@ async function addEmployee(_req: express.Request, _res: express.Response): Promi
 
     message = await controller.add(createEmployee(_req));
 
-    console.log(message);
     if (message.isError) {
         createResponse("Failed", message, _res);
     } else {
@@ -165,3 +164,46 @@ function createResponse(successMessage: string, message: Message, _res: express.
         });
     }
 }
+
+
+const checkIfAdmin = async (_req: express.Request, _res: express.Response, _next: express.NextFunction) => {
+
+    const url = await createUrlFor(_req);
+
+    let isAdmin = false;
+    await axios.get(url).then(v => {
+        const data = v.data.message.data as string[];
+        data.forEach(x => {
+            if (x === 'Admin') {
+                isAdmin = true;
+            }
+        });
+    }, (_reason) => {
+        console.log("Fail to check if user is admin");
+    });
+
+    if (isAdmin) {
+        _next();
+    } else {
+        _res.status(500).send({
+            message: {
+                message: "Not an Admin",
+                statusCode: "400",
+            }
+        });
+        _next('router');
+    }
+}
+
+async function createUrlFor(_req: express.Request) {
+    const authTokenFromHeader = getAuthToken(_req);
+
+    // get userInfo from token
+    const tokenUtil = new JwtUtil();
+    const userData: Data = await tokenUtil.getUser(authTokenFromHeader);
+
+    axios.defaults.headers.common['Authorization'] = authTokenFromHeader;
+    const url = `${process.env.HTTP}://${process.env.HOST}:${process.env.PORT_NUMBER_AUTH}/api/Auth/Roles/${userData.data._id}`;
+
+    return url;
+}   

@@ -6,7 +6,7 @@ export class RegisterController {
     constructor() {
     }
 
-    register(_user: User): Promise<Message> {
+    register(_user: User, roleId: string): Promise<Message> {
         return new Promise<Message>((resolve, reject) => {
             const message = new Message();
             message.message = "Successful";
@@ -15,6 +15,7 @@ export class RegisterController {
             const dbUser = new DbUser();
             dbUser.email = _user.email;
             dbUser.password = _user.password;
+            dbUser.roles.push(roleId);
 
             dbUser.save((error, user) => {
                 if (error) {

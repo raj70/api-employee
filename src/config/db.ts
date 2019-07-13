@@ -23,3 +23,12 @@ export const connectdb_Auth = () => {
         }
     });
 }
+
+export const changeDbConnction = (isAuthServer: boolean) => {
+    if (isAuthServer) {
+        connectdb_Auth();
+    }
+    else {
+        connectdb();
+    }
+}

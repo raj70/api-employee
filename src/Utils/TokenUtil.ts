@@ -47,7 +47,6 @@ export class JwtUtil {
             if (this.validate(token, () => { })) {
                 await jwt.verify(token, this.key, (error, decoded) => {
                     if (error) {
-                        console.log("get error", error);
                         resolve(value);
                     }
                     else if (decoded) {

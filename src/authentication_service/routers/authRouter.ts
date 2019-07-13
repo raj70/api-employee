@@ -1,18 +1,20 @@
 import express from 'express';
 import { AuthController } from '../controllers/AuthController';
 import { User } from '../models/User';
-import { Role } from '../models/Role';
+import { Role, EnumRoles } from '../models/Role';
 import { RoleController } from '../controllers/RoleController';
 import { RegisterController } from '../controllers/RegisterController';
 import { isAuthenticated, getAuthToken } from '../../Utils/authMiddleware';
+import { IDbUser } from '../dbModels/DbUser';
 import { Data, JwtUtil } from '../../Utils/TokenUtil';
 
 export function setRouter(router: express.Router): void {
-    router.get('/Auth/Role/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, checkIfAdmin, getRole);
+    router.get('/Auth/Role/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, getRole);
+    router.get('/Auth/Roles/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, getRoles);
     router.get('/Auth/User/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, checkIfAdmin, getUser); /** why do I need this? */
     router.post('/Auth/User', isAuthenticated, checkIfAdmin, register);
     router.post('/Auth/Role', isAuthenticated, checkIfAdmin, setRole);
-    router.post('/Auth/Login', validate);
+    router.post('/Auth/Login', login);
 }
 /**
  * request must not be from client; request must be from known host 
@@ -27,13 +29,22 @@ async function getRole(_req: express.Request, _res: express.Response): Promise<v
     }
 }
 
+async function getRoles(_req: express.Request, _res: express.Response): Promise<void> {
+    const controller = new RoleController();
+    const message = await controller.getRoles(_req.params.id);
+    if (message.isError) {
+        _res.status(500).send({ message });
+    } else {
+        _res.status(200).send({ message });
+    }
+}
+
 /** check the user is authenticated and role is admin */
 async function setRole(_req: express.Request, _res: express.Response): Promise<void> {
     const controller = new RoleController();
 
     const role = new Role();
-    role.assignRole = _req.body.assignRole;
-    role.userId = _req.body.userId; /* this is id created by Db,in case of MongoDb */
+    role.name = _req.body.name as EnumRoles;
 
     const message = await controller.setRole(role);
     if (message.isError) {
@@ -60,7 +71,7 @@ async function register(_req: express.Request, _res: express.Response): Promise<
     user.email = _req.body.email;
     user.password = _req.body.password;
 
-    const message = await controller.register(user);
+    const message = await controller.register(user, _req.body.roleId);
     if (message.isError) {
         _res.status(500).send({ message });
     } else {
@@ -68,13 +79,14 @@ async function register(_req: express.Request, _res: express.Response): Promise<
     }
 }
 
-async function validate(_req: express.Request, _res: express.Response): Promise<void> {
+async function login(_req: express.Request, _res: express.Response): Promise<void> {
     const controller = new AuthController();
 
     const user = new User();
     user.email = _req.body.email;
     user.password = _req.body.password;
-    const message = await controller.validate(user);
+
+    const message = await controller.login(user);
     if (message.isError) {
         _res.status(500).send({ message });
     } else {
@@ -88,21 +100,39 @@ async function validate(_req: express.Request, _res: express.Response): Promise<
  * @param _res 
  * @param _next 
  */
-async function checkIfAdmin(_req: express.Request, _res: express.Response, _next: express.NextFunction) {
+export async function checkIfAdmin(_req: express.Request, _res: express.Response, _next: express.NextFunction) {
 
     const authTokenFromHeader = getAuthToken(_req);
 
+    // get userInfo from token
     const tokenUtil = new JwtUtil();
     const data: Data = await tokenUtil.getUser(authTokenFromHeader);
 
-    const controller = new RoleController();
-    const message = await controller.getRole(data.data._id);
+    // get user from Db
+    const authController = new AuthController();
+    let message = await authController.getUser(data.data._id);
 
+    let isAdmin = false;
 
+    console.log(message, data.data);
+    if (!message.isError) {
+        const controller = new RoleController();
+        const roleIds = (message.data[0] as IDbUser).roles;
 
-    let isError = message.isError;
+        roleIds.forEach(async x => {
+            message = await controller.getRole(x);
 
-    if (message.isError) {
+            const role = (message.data[0] as Role).name;
+            console.log(isAdmin, role);
+            if (role === EnumRoles.Admin) {
+                isAdmin = true;
+                console.log(isAdmin, role);
+            }
+        });
+    }
+
+    console.log('isAdmin', isAdmin);
+    if (message.isError || !isAdmin) {
         _res.status(500).send({
             message: {
                 message: "Fail",
@@ -111,28 +141,11 @@ async function checkIfAdmin(_req: express.Request, _res: express.Response, _next
         });
     }
 
-    if (!message.isError && message.data.length > 0) {
-        const roles = (message.data[0] as Role).assignRole;
-        let isAdmin = false;
-        roles.forEach(x => {
-            isAdmin = <string>x === "Admin";
-        });
-        if (!isAdmin) {
-
-            _res.status(500).send({
-                message: {
-                    message: "Fail",
-                    statusCode: "400",
-                }
-            });
-
-            isError = true;
-        }
-    }
-
-    if (!isError) {
+    if (!isAdmin) {
+        /* stop to follow to next middleware */
         _next('router');
     } else {
         _next();
     }
 }
+

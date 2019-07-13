@@ -1,4 +1,5 @@
+import { EnumRoles } from "./Role";
+
 export default interface IRole {
-    userId: string;
-    assignRole: [];
+    name: EnumRoles;
 }
