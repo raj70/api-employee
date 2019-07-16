@@ -30,6 +30,7 @@ export class EmployeeController implements IController<Employee>{
                 dbEmployee.phone = employee.phone;
                 dbEmployee.mobile_phone = employee.mobile_phone;
                 dbEmployee.Dob = employee.Dob;
+                dbEmployee.roleId = employee.roleId;
 
                 await dbEmployee.save(error => {
 
@@ -150,27 +151,31 @@ export class EmployeeController implements IController<Employee>{
             let message = new Message();
             message.statusCode = 200;
             message.message = "Updated ";
-            DbEmployee.findOneAndUpdate({ _id: id, email: model.email }, model, { new: true }, (error, employee) => {
-                if (error) {
-                    message.isError = true;
-                    message.statusCode = 400;
-                    message.message = "Error " + error.message;
-                    reject(message);
-                }
-                else if (!employee) {
-                    console.log(employee, error);
-                    message.isError = true;
-                    message.statusCode = 400;
-                    message.message = "Cannot edit email address";
-                    reject(message);
-                }
-                else {
-                    console.log(employee);
-                    const emp = this.createEmployee(employee);
-                    message.data = [emp];
-                }
-                resolve(message);
-            });
+            DbEmployee.findOneAndUpdate(
+                {
+                    _id: id,
+                    email: model.email
+                },
+                model, { new: true },
+                (error, employee) => {
+                    if (error) {
+                        message.isError = true;
+                        message.statusCode = 400;
+                        message.message = "Error " + error.message;
+                        reject(message);
+                    }
+                    else if (!employee) {
+                        message.isError = true;
+                        message.statusCode = 400;
+                        message.message = "Cannot edit email address";
+                        reject(message);
+                    }
+                    else {
+                        const emp = this.createEmployee(employee);
+                        message.data = [emp];
+                    }
+                    resolve(message);
+                });
         }).catch(reason => {
             return reason;
         });
@@ -187,6 +192,7 @@ export class EmployeeController implements IController<Employee>{
         emp.name = employee.name;
         emp.phone = <number>employee.phone;
         emp.title = employee.title;
+        emp.roleId = employee.roleId;
         return emp;
     }
 }

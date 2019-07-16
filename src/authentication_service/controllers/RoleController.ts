@@ -58,6 +58,30 @@ export class RoleController {
                     resolve(message);
                 }
             });
+        });
+    }
+
+    getAllRoles(): Promise<Message> {
+        return new Promise<Message>(async (resolve, reject) => {
+            const message = new Message();
+            message.message = "Successful";
+            message.statusCode = 200;
+            console.log("getAllRoles");
+            await DbRole.find({}, (error, roles) => {
+                if (error || !roles) {
+                    console.log('getAllRoles', error, roles);
+                    message.isError = true;
+                    message.statusCode = 500;
+                    message.message = "Roles not found";
+                    reject(message);
+                } else {
+                    console.log(roles);
+                    roles.forEach(x => {
+                        message.data.push({ roleId: x._id, name: x.name });
+                    });
+                    resolve(message);
+                }
+            })
 
         });
     }

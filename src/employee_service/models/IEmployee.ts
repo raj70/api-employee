@@ -8,4 +8,5 @@ export default interface IEmployee {
     phone: Number;
     mobile_phone: Number;
     Dob: Date;
+    roleId: string;
 }

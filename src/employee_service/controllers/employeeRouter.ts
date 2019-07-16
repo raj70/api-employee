@@ -150,6 +150,7 @@ function createEmployee(_req: express.Request): Employee {
     employee.phone = _req.body.phone;
     employee.mobile_phone = _req.body.mobile_phone;
     employee.Dob = _req.body.dob;
+    employee.roleId = _req.body.roleId;
     return employee;
 }
 

@@ -11,6 +11,7 @@ import { Data, JwtUtil } from '../../Utils/TokenUtil';
 export function setRouter(router: express.Router): void {
     router.get('/Auth/Role/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, getRole);
     router.get('/Auth/Roles/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, getRoles);
+    router.get('/Auth/Roles', isAuthenticated, checkIfAdmin, getAllRoles);
     router.get('/Auth/User/:id([a-zA-Z0-9]{24}$)/', isAuthenticated, checkIfAdmin, getUser); /** why do I need this? */
     router.post('/Auth/User', isAuthenticated, checkIfAdmin, register);
     router.post('/Auth/Role', isAuthenticated, checkIfAdmin, setRole);
@@ -32,6 +33,16 @@ async function getRole(_req: express.Request, _res: express.Response): Promise<v
 async function getRoles(_req: express.Request, _res: express.Response): Promise<void> {
     const controller = new RoleController();
     const message = await controller.getRoles(_req.params.id);
+    if (message.isError) {
+        _res.status(500).send({ message });
+    } else {
+        _res.status(200).send({ message });
+    }
+}
+
+async function getAllRoles(_req: express.Request, _res: express.Response): Promise<void> {
+    const controller = new RoleController();
+    const message = await controller.getAllRoles();
     if (message.isError) {
         _res.status(500).send({ message });
     } else {
@@ -110,42 +121,53 @@ export async function checkIfAdmin(_req: express.Request, _res: express.Response
 
     // get user from Db
     const authController = new AuthController();
-    let message = await authController.getUser(data.data._id);
+    let userResponse = await authController.getUser(data.data._id);
 
-    let isAdmin = false;
+    if (!userResponse.isError) {
+        const ifAdmin = new Promise<boolean>(async (resolve, _reject) => {
+            let isAdmin = false;
+            const controller = new RoleController();
+            const roleIds = (userResponse.data[0] as IDbUser).roles;
 
-    console.log(message, data.data);
-    if (!message.isError) {
-        const controller = new RoleController();
-        const roleIds = (message.data[0] as IDbUser).roles;
-
-        roleIds.forEach(async x => {
-            message = await controller.getRole(x);
-
-            const role = (message.data[0] as Role).name;
-            console.log(isAdmin, role);
-            if (role === EnumRoles.Admin) {
-                isAdmin = true;
-                console.log(isAdmin, role);
+            for (let index = 0; index < roleIds.length; index++) {
+                await controller.getRole(roleIds[index]).then(m => {
+                    //console.log('1', isAdmin, m.data);
+                    m.data.forEach(r => {
+                        let role = r as String;
+                        if (role === 'Admin') {
+                            isAdmin = true;
+                            //console.log('2', isAdmin, role);
+                        }
+                    });
+                    if (isAdmin) {
+                        resolve(isAdmin); /** resolve terminate the promise */
+                    }
+                });
             }
-        });
-    }
+            resolve(isAdmin);
+            /** resolve terminate the promise; if the user is not admin; if we don't have this line, log 3 an log 4 will be seen. */
 
-    console.log('isAdmin', isAdmin);
-    if (message.isError || !isAdmin) {
-        _res.status(500).send({
+        }).catch(_reason => false);
+
+        const isAdmin = await ifAdmin;
+        //console.log('3', isAdmin);
+        if (!isAdmin) {
+            //console.log('4', isAdmin)
+            /* stop to follow to next middleware */
+            _next('router');
+        } else {
+            //console.log('5', isAdmin)
+            _next();
+        }
+
+    } else {
+        _res.status(400).send({
             message: {
                 message: "Fail",
                 statusCode: "400",
             }
         });
-    }
-
-    if (!isAdmin) {
-        /* stop to follow to next middleware */
         _next('router');
-    } else {
-        _next();
     }
 }
 

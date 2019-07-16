@@ -16,20 +16,17 @@ export class AuthController {
 
             await DbUser.findById(_id, (error, user) => {
                 if (error) {
-                    console.log('error', error);
                     message.isError = true;
                     message.statusCode = 500;
                     message.message = "User not found";
                     reject(message);
                 } else if (!user) {
-                    console.log('user', user);
                     message.isError = true;
                     message.statusCode = 500;
                     message.message = "User not found";
                     reject(message);
                 }
                 else {
-                    console.log(user);
                     message.data = [<IDbUser>user];
                     resolve(message);
                 }

@@ -35,6 +35,10 @@ const employeeSchema: Schema = new Schema({
         type: Date,
         required: true
     },
+    roleId: {
+        type: String,
+        required: true
+    }
 });
 
 employeeSchema.set("timestamps", true);

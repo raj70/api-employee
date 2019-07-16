@@ -14,6 +14,7 @@ export class Employee implements IEmployee {
     phone!: number;
     mobile_phone!: number;
     Dob!: Date;
+    roleId: string;
 
     constructor() {
         this.title = "Mr";
@@ -21,6 +22,7 @@ export class Employee implements IEmployee {
         this.middleName = "";
         this.lastName = "";
         this.joinDate = new Date();
+        this.roleId = "";
     }
 
     fullName() {
